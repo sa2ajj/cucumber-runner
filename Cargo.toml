@@ -1,0 +1,16 @@
+[package]
+name = "cucumber-runner"
+version = "0.1.0"
+authors = [
+    "Mikhail Sobolev <mss@mawhrin.net>"
+]
+build = "build.rs"
+
+[dependencies]
+lazy_static = "*"
+regex = "*"
+term = "*"
+
+[[test]]
+name = "features"
+path = "features/features.rs"
