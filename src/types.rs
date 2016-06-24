@@ -1,4 +1,6 @@
-#[derive(Debug)]
+pub type Features = Vec<Feature>;
+
+#[derive(Clone, Debug)]
 pub struct Feature {
     pub filename: String,
     pub name: Option<String>,
@@ -7,13 +9,13 @@ pub struct Feature {
     pub items: Vec<FeatureItem>,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum FeatureItem {
     Scenario(Scenario),
     ScenarioOutline(ScenarioOutline),
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Scenario {
     pub lineno: u32,
     pub name: String,
@@ -21,7 +23,7 @@ pub struct Scenario {
     pub steps: Steps,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ScenarioOutline {
     pub lineno: u32,
     pub name: Option<String>,
@@ -30,21 +32,21 @@ pub struct ScenarioOutline {
     pub examples: Vec<Table>,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum StepKind {
     Given,
     When,
     Then,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum StepArg {
     None,
     MultiLine(String),
     Table(Table),
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Step {
     pub lineno: u32,
     pub kind: StepKind,

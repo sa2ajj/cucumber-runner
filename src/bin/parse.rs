@@ -3,11 +3,13 @@ extern crate cucumber_runner;
 use std::env;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let mut cwd = env::current_dir().unwrap();
 
-    println!("We are in {:?}", env::current_dir().unwrap());
+    println!("We are in {:?}", cwd);
 
-    for arg in &args[1..] {
-        println!("Got: {}", arg);
-    }
+    cwd.push("features");
+
+    let features = cucumber_runner::find_features(cwd.as_path()).unwrap();
+
+    println!("Found: {:?}", features);
 }

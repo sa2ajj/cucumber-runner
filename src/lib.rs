@@ -5,6 +5,7 @@ extern crate regex;
 mod error;
 mod parser;
 mod types;
+mod utils;
 
 use std::result;
 
@@ -13,3 +14,5 @@ pub use types::*;
 pub use parser::parse;
 
 pub type Result<T> = result::Result<T, Error>;
+
+pub use utils::find_features;
