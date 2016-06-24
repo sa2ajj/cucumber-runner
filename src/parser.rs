@@ -42,7 +42,7 @@ pub fn parse(filename: &str) -> Result<Feature> {
         match state {
             State::Init => {
                 lazy_static! {
-                    static ref RE: Regex = try!(prepare_regex(&[FEATURE_RE, LANGUAGE_RE, TAGS_RE], true).compile());
+                    static ref RE: Regex = prepare_regex(&[FEATURE_RE, LANGUAGE_RE, TAGS_RE], true);
                 }
 
                 match try!(parse_line(&line, &RE)) {
@@ -84,7 +84,7 @@ static OTHER_RE: &'static str = "(?P<other>[^#]*)";
 static INDENT_RE: &'static str = r"(?P<indent>\s*)";
 static COMMENT_RE: &'static str = r"\s*(#\s*(?P<comment>.*))?";
 
-fn prepare_regex(bits: &[&str], detect_comment: bool) -> RegexBuilder {
+fn prepare_regex(bits: &[&str], detect_comment: bool) -> Regex {
     let actual_bits = &bits.join("|");
     let mut pattern: Vec<&str> = vec!("^",
                                       INDENT_RE,
@@ -100,6 +100,8 @@ fn prepare_regex(bits: &[&str], detect_comment: bool) -> RegexBuilder {
     RegexBuilder::new(&pattern.join(r""))
                  .case_insensitive(true)
                  .ignore_whitespace(true)
+                 .compile()
+                 .unwrap()
 }
 
 enum LineKind {
@@ -133,33 +135,28 @@ fn parse_line(line: &str, regex: &Regex) -> Result<Line> {
     let mut indent: usize = 0;
     let mut comment: Option<String> = None;
 
-    match regex.captures(line) {
-        None => {
-            return Err(Error::from_str(&format!("Can't parse: {}", line)));
-        }
+    let captures = try!(regex.captures(line)
+                             .ok_or_else(|| Error::from_str(&format!("Can't parse: {}", line))));
 
-        Some(captures) => {
-            for (name, actual_value) in captures.iter_named() {
-                match name {
-                    "indent" => {
-                        indent = actual_value.map_or(0, |value| value.len());
+    for (name, actual_value) in captures.iter_named() {
+        match name {
+            "indent" => {
+                indent = actual_value.map_or(0, |value| value.len());
+            }
+
+            "comment" => {
+                comment = actual_value.map(|value| value.to_owned());
+            }
+
+            _ => {
+                match actual_value {
+                    None => {
+                        kind = Some(name.to_owned());
+                        value = actual_value.map(|value| value.to_owned());
                     }
 
-                    "comment" => {
-                        comment = actual_value.map(|value| value.to_owned());
-                    }
-
-                    _ => {
-                        match actual_value {
-                            None => {
-                                kind = Some(name.to_owned());
-                                value = actual_value.map(|value| value.to_owned());
-                            }
-
-                            Some(other) => {
-                                return Err(Error::from_str(&format!("Double match: {} and {}", other, name)));
-                            }
-                        }
+                    Some(other) => {
+                        return Err(Error::from_str(&format!("Double match: {} and {}", other, name)));
                     }
                 }
             }
