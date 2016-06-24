@@ -163,66 +163,58 @@ fn parse_line(line: &str, regex: &Regex) -> Result<Line> {
         }
     }
 
-    match kind {
-        None => {
-            unimplemented!()
+    let kind = match try!(kind.ok_or_else(|| Error::from_str(&format!("Could not determine line kind for: {}", line)))).as_str() {
+        "tags" =>
+            LineKind::Tags,
+
+        "feature" =>
+            LineKind::Feature,
+
+        "background" =>
+            LineKind::Background,
+
+        "scenario" =>
+            LineKind::Scenario,
+
+        "outline" =>
+            LineKind::ScenarioOutline,
+
+        "given" =>
+            LineKind::GivenStep,
+
+        "when" =>
+            LineKind::WhenStep,
+
+        "then" =>
+            LineKind::ThenStep,
+
+        "and" =>
+            LineKind::AndStep,
+
+        "but" =>
+            LineKind::ButStep,
+
+        "examples" =>
+            LineKind::Examples,
+
+        "table" =>
+            LineKind::Table,
+
+        "docstring" =>
+            LineKind::DocString,
+
+        "other" =>
+            LineKind::Other,
+
+        kind @ _ => {
+            return Err(Error::from_str(&format!("Unknown kind: {}", kind)));
         }
+    };
 
-        Some(kind) => {
-            let kind = match kind.as_str() {
-                "tags" =>
-                    LineKind::Tags,
-
-                "feature" =>
-                    LineKind::Feature,
-
-                "background" =>
-                    LineKind::Background,
-
-                "scenario" =>
-                    LineKind::Scenario,
-
-                "outline" =>
-                    LineKind::ScenarioOutline,
-
-                "given" =>
-                    LineKind::GivenStep,
-
-                "when" =>
-                   LineKind::WhenStep,
-
-                "then" =>
-                    LineKind::ThenStep,
-
-                "and" =>
-                    LineKind::AndStep,
-
-                "but" =>
-                    LineKind::ButStep,
-
-                "examples" =>
-                    LineKind::Examples,
-
-                "table" =>
-                    LineKind::Table,
-
-                "docstring" =>
-                    LineKind::DocString,
-
-                "other" =>
-                    LineKind::Other,
-
-                _ => {
-                    return Err(Error::from_str(&format!("Unknown match: {}", kind)));
-                }
-            };
-
-            Ok(Line{
-                kind: kind,
-                value: value,
-                indent: indent,
-                comment: comment
-            })
-        }
-    }
+    Ok(Line{
+        kind: kind,
+        value: value,
+        indent: indent,
+        comment: comment
+    })
 }
