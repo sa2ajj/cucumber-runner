@@ -82,7 +82,8 @@ static DOCSTRING_RE: &'static str = "(?P<docstring>\"\"\"|''')";
 static OTHER_RE: &'static str = "(?P<other>[^#]*)";
 
 static INDENT_RE: &'static str = r"(?P<indent>\s*)";
-static COMMENT_RE: &'static str = r"\s*(#\s*(?P<comment>.*))?";
+// '#' requires escaping because of the way we compile regex
+static COMMENT_RE: &'static str = r"\s*(\#\s*(?P<comment>.*))?";
 
 fn prepare_regex(bits: &[&str], detect_comment: bool) -> Regex {
     let actual_bits = &bits.join("|");
@@ -149,21 +150,23 @@ fn parse_line(line: &str, regex: &Regex) -> Result<Line> {
             }
 
             _ => {
-                match actual_value {
-                    None => {
-                        kind = Some(name.to_owned());
-                        value = actual_value.map(|value| value.to_owned());
-                    }
-
-                    Some(other) => {
+                // ignore None results
+                if let Some(actual_value) = actual_value {
+                    if let Some(other) = kind {
                         return Err(Error::from_str(&format!("Double match: {} and {}", other, name)));
                     }
+
+                    kind = Some(name.to_owned());
+                    value = Some(actual_value.to_owned());
                 }
             }
         }
     }
 
-    let kind = match try!(kind.ok_or_else(|| Error::from_str(&format!("Could not determine line kind for: {}", line)))).as_str() {
+    let kind = match kind.unwrap_or(String::new()).as_str() {
+        "" =>
+            LineKind::EmptyLine,
+
         "tags" =>
             LineKind::Tags,
 
