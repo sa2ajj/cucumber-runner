@@ -14,6 +14,7 @@ use super::Result;
 
 use types::*;
 
+#[derive(Debug)]
 pub enum State {
     Init,
     FeatureAndTags,
@@ -46,13 +47,16 @@ pub fn parse(filename: &str) -> Result<Feature> {
                 }
 
                 match try!(parse_line(&line, &RE)) {
-                    _ =>
+                    line @ _ => {
+                        println!("Init: got {:?}", line);
+
                         unimplemented!()
+                    }
                 }
             }
 
             _ => {
-                return Err(Error::from_str("unhandled state"));
+                return Err(Error::from_str(&format!("unhandled state: {:?}", state)));
             }
         }
     }
@@ -105,6 +109,7 @@ fn prepare_regex(bits: &[&str], detect_comment: bool) -> Regex {
                  .unwrap()
 }
 
+#[derive(Debug)]
 enum LineKind {
     EmptyLine,
     Tags,
@@ -123,6 +128,7 @@ enum LineKind {
     Other,
 }
 
+#[derive(Debug)]
 struct Line {
     pub kind: LineKind,
     pub value: Option<String>,
