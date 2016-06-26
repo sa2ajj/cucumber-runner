@@ -110,30 +110,23 @@ fn prepare_regex(bits: &[&str], detect_comment: bool) -> Regex {
 }
 
 #[derive(Debug)]
-enum LineKind {
-    EmptyLine,
-    Tags,
-    Feature,
-    Background,
-    Scenario,
-    ScenarioOutline,
-    GivenStep,
-    WhenStep,
-    ThenStep,
-    AndStep,
-    ButStep,
-    Examples,
-    Table,
-    DocString,
-    Other,
-}
-
-#[derive(Debug)]
-struct Line {
-    pub kind: LineKind,
-    pub value: Option<String>,
-    pub indent: usize,
-    pub comment: Option<String>,
+enum Line {
+    EmptyLine(usize, Option<String>),
+    Language(usize, Option<String>, String),
+    Tags(usize, Option<String>, Vec<String>),
+    Feature(usize, Option<String>, Option<String>),
+    Background(usize, Option<String>),
+    Scenario(usize, Option<String>, Option<String>),
+    ScenarioOutline(usize, Option<String>, Option<String>),
+    GivenStep(usize, Option<String>, String),
+    WhenStep(usize, Option<String>, String),
+    ThenStep(usize, Option<String>, String),
+    AndStep(usize, Option<String>, String),
+    ButStep(usize, Option<String>, String),
+    Examples(usize, Option<String>),
+    TableRow(usize, Option<String>, Vec<String>),
+    DocStringDelimiter(usize, Option<String>, String),
+    Other(usize, Option<String>, String),
 }
 
 fn parse_line(line: &str, regex: &Regex) -> Result<Line> {
@@ -169,61 +162,66 @@ fn parse_line(line: &str, regex: &Regex) -> Result<Line> {
         }
     }
 
-    let kind = match kind.unwrap_or(String::new()).as_str() {
+    Ok(match kind.unwrap_or(String::new()).as_str() {
         "" =>
-            LineKind::EmptyLine,
+            Line::EmptyLine(indent, comment),
+
+        "language" =>
+            Line::Language(indent, comment, value.unwrap()),
 
         "tags" =>
-            LineKind::Tags,
-
+            Line::Tags(indent, comment, value.map_or(Vec::new(),
+                                                     |tags| tags.split(' ')
+                                                                .map(|tag| tag.to_owned())
+                                                                .collect())),
         "feature" =>
-            LineKind::Feature,
+            Line::Feature(indent, comment, value),
 
         "background" =>
-            LineKind::Background,
+            Line::Background(indent, comment),
 
         "scenario" =>
-            LineKind::Scenario,
+            Line::Scenario(indent, comment, value),
 
         "outline" =>
-            LineKind::ScenarioOutline,
+            Line::ScenarioOutline(indent, comment, value),
 
         "given" =>
-            LineKind::GivenStep,
+            Line::GivenStep(indent, comment, value.unwrap()),
 
         "when" =>
-            LineKind::WhenStep,
+            Line::WhenStep(indent, comment, value.unwrap()),
 
         "then" =>
-            LineKind::ThenStep,
+            Line::ThenStep(indent, comment, value.unwrap()),
 
         "and" =>
-            LineKind::AndStep,
+            Line::AndStep(indent, comment, value.unwrap()),
 
         "but" =>
-            LineKind::ButStep,
+            Line::ButStep(indent, comment, value.unwrap()),
 
         "examples" =>
-            LineKind::Examples,
+            Line::Examples(indent, comment),
 
-        "table" =>
-            LineKind::Table,
+        "table" => {
+            let value = value.unwrap();
+            let rows: Vec<&str> = value.split('|').collect();
+
+            // XXX: check the content
+            Line::TableRow(indent, comment, rows.into_iter()
+                                                .map(|item| item.to_owned())
+                                                .collect())
+        }
 
         "docstring" =>
-            LineKind::DocString,
+            Line::DocStringDelimiter(indent, comment, value.unwrap()),
 
         "other" =>
-            LineKind::Other,
+            Line::Other(indent, comment, value.unwrap()),
 
         kind @ _ => {
             return Err(Error::from_str(&format!("Unknown kind: {}", kind)));
         }
-    };
-
-    Ok(Line{
-        kind: kind,
-        value: value,
-        indent: indent,
-        comment: comment
     })
 }
