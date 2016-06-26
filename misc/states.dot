@@ -1,0 +1,91 @@
+digraph gherkin {
+    node [shape=doublecircle];
+    init [label="Init"];
+    error [label="Error"];
+
+	node [shape=circle];
+
+    examples [label="Examples"];
+    feature_and_tags [label="Feature\nand\nTags"];
+    feature [label="Feature"];
+    feature_with_background [label="Feature\nwith\nBackground"];
+    feature_with_description [label="Feature\nwith\nDescription"];
+    scenario [label="Scenario"];
+    scenario_outline [label="Scenario\nOutline"];
+    scenario_outline_steps [label="Scenario Outline\nSteps"];
+    scenario_outline_with_description [label="Scenario Outline\nwith\nDescription"];
+    scenario_steps [label="Scenario\nSteps"];
+    scenario_with_description [label="Scenario\nwith\nDescription"];
+    tags_for_feature [label="Tags\nfor\nFeature"];
+
+    init -> error [label="*"];
+    init -> feature [label="feature"];
+    init -> init [label="empty\nline"];
+    init -> init [label="language"];    // currently ignore
+    init -> tags_for_feature [label="tags"];
+
+    tags_for_feature -> error [label="*"];
+    tags_for_feature -> feature [label="feature"];
+    tags_for_feature -> tags_for_feature [label="empty\nline"];
+    tags_for_feature -> tags_for_feature [label="tags"];
+
+    feature_with_description -> feature_with_description [label="empty\nline"];
+    feature_with_description -> feature_with_description [label="description"];
+    feature_with_description -> feature_with_background [label="background"];
+    feature_with_description -> feature_and_tags [label="tags"];
+    feature_with_description -> scenario [label="scenario"];
+    feature_with_description -> scenario_outline [label="scenario\noutline"];
+
+    feature_with_background -> feature_with_background [label="empty\nline"];
+    feature_with_background -> feature_with_background [label="step"];
+    feature_with_background -> feature_and_tags [label="tags"];
+    feature_with_background -> scenario [label="scenario"];
+    feature_with_background -> scenario_outline [label="scenario\noutline"];
+
+    feature_and_tags -> feature_and_tags [label="empty\nline"];
+    feature_and_tags -> feature_and_tags [label="tags"];
+    feature_and_tags -> scenario [label="scenario"];
+    feature_and_tags -> scenario_outline [label="scenario\noutline"];
+
+    feature -> feature [label="empty\nline"];
+    feature -> feature_with_description [label="description"];
+    feature -> feature_with_background [label="background"];
+    feature -> feature_and_tags [label="tags"];
+    feature -> scenario [label="scenario"];
+    feature -> scenario_outline [label="scenario\noutline"];
+
+    scenario -> scenario [label="empty\nline"];
+    scenario -> scenario_with_description [label="description"];
+    scenario -> scenario_steps [label="given\nstep"];
+
+    scenario_with_description -> scenario_with_description [label="description"];
+    scenario_with_description -> scenario_steps [label="given\nstep"];
+
+    scenario_steps -> feature_and_tags [label="tags"];
+    scenario_steps -> scenario [label="scenario"];
+    scenario_steps -> scenario_outline [label="scenario\noutline"];
+    scenario_steps -> scenario_steps [label="and\nstep"];
+    scenario_steps -> scenario_steps [label="but\nstep"];
+    scenario_steps -> scenario_steps [label="empty\nline"];
+    scenario_steps -> scenario_steps [label="given\nstep"];
+    scenario_steps -> scenario_steps [label="then\nstep"];
+    scenario_steps -> scenario_steps [label="when\nstep"];
+
+    scenario_outline -> scenario_outline [label="empty\nline"];
+    scenario_outline -> scenario_outline_with_description [label="description"];
+    scenario_outline -> scenario_outline_steps [label="given\nstep"];
+
+    scenario_outline_with_description -> scenario_outline_with_description [label="description"];
+    scenario_outline_with_description -> scenario_outline_steps [label="given\nstep"];
+
+    scenario_outline_steps -> error [label="*"];
+    scenario_outline_steps -> examples [label="examples"];
+    scenario_outline_steps -> scenario_outline_steps [label="and\nstep"];
+    scenario_outline_steps -> scenario_outline_steps [label="but\nstep"];
+    scenario_outline_steps -> scenario_outline_steps [label="empty\nline"];
+    scenario_outline_steps -> scenario_outline_steps [label="given\nstep"];
+    scenario_outline_steps -> scenario_outline_steps [label="then\nstep"];
+    scenario_outline_steps -> scenario_outline_steps [label="when\nstep"];
+
+    examples -> examples_with_description [label="description"];
+}
