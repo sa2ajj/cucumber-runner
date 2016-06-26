@@ -86,6 +86,9 @@ digraph gherkin {
     scenario_outline_steps -> scenario_outline_steps [label="given\nstep"];
     scenario_outline_steps -> scenario_outline_steps [label="then\nstep"];
     scenario_outline_steps -> scenario_outline_steps [label="when\nstep"];
+    scenario_outline_steps -> tags_for_examples [label="tags"];
+
+    tags_for_examples -> examples [label="examples"];
 
     examples -> examples_with_description [label="description"];
 }
