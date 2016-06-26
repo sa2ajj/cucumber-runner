@@ -7,10 +7,12 @@ authors = [
 build = "build.rs"
 
 [dependencies]
+colored = "*"
 lazy_static = "*"
 regex = "*"
-term = "*"
+rustc-test = "*"
 
 [[test]]
 name = "features"
 path = "features/features.rs"
+harness = false

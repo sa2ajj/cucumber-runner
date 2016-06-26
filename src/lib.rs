@@ -1,3 +1,4 @@
+extern crate colored;
 #[macro_use]
 extern crate lazy_static;
 extern crate regex;
@@ -17,3 +18,4 @@ pub use parser::parse;
 pub type Result<T> = result::Result<T, Error>;
 
 pub use utils::find_features;
+pub use utils::parse_files;
